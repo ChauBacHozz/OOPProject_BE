@@ -23,7 +23,7 @@ public class WeatherAPI {
                     "https://api.openweathermap.org/data/3.0/onecall?lat=%s&lon=%s&appid=%s",
                     this.HANOI_lat,
                     this.HANOI_lon,
-                    this.geo_apikey
+                    this.geo_apikey //
             );
             URL url = new URL(urlStr);
 
