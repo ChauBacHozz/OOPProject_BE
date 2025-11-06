@@ -1,4 +1,5 @@
 package main.api_connect;
+import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -15,24 +16,29 @@ public class WeatherAPI {
     private String country = "VN";
     private String HANOI_lat = "21.0294498";
     private String HANOI_lon = "105.8544441";
+    private String DANANG_lat = "16.068";
+    private String DANANG_lon = "108.212";
+    private String HOCHIMINH_lat = "10.776325";
+    private String HOCHIMINH_lon = "106.7012016";
 
 //    private String url = "http://maps.openweathermap.org/maps/2.0/weather/TA2/{z}/{x}/{y}?date=1552861800&opacity=0.9&fill_bound=true&appid=36b69ee0026fdc012bc3898d9389d0a2";
-    public void apiTest() {
+    public WeatherResponse getWeatherData(String lat, String lon) {
         try {
             String urlStr = String.format(
-                    "https://api.openweathermap.org/data/3.0/onecall?lat=%s&lon=%s&appid=%s",
-                    this.HANOI_lat,
-                    this.HANOI_lon,
-                    this.geo_apikey //
+                    "https://api.openweathermap.org/data/3.0/onecall?lat=%s&lon=%s&exclude=minutely&appid=%s",
+                    lat,
+                    lon,
+                    this.geo_apikey
             );
             URL url = new URL(urlStr);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
-
             int responseCode = conn.getResponseCode();
-            System.out.println(responseCode);
+            if (responseCode != 200) {
+                throw new RuntimeException("Failed to get weather data. HTTP error code: " + responseCode);
+            }
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String inputLine;
@@ -45,16 +51,30 @@ public class WeatherAPI {
             in.close();
 
             String json = response.toString();
-            System.out.println(json);
+            Gson gson = new Gson();
+            return gson.fromJson(json, WeatherResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
+    }
+
+    public WeatherResponse getHanoiWeather() {
+        return getWeatherData(HANOI_lat, HANOI_lon);
+    }
+
+    public WeatherResponse getDaNangWeather() {
+        return getWeatherData(DANANG_lat, DANANG_lon);
+    }
+
+    public WeatherResponse getHoChiMinhWeather() {
+        return getWeatherData(HOCHIMINH_lat, HOCHIMINH_lon);
     }
 
     public void GeocodingAPI() {
         try {
             String urlStr = String.format(
-                    "http://api.openweathermap.org/geo/1.0/direct?q=Hanoi,VN&limit=1&appid=%s",
+                    "http://api.openweathermap.org/geo/1.0/direct?q=Haiphong,VN&limit=1&appid=%s",
 //                    this.zipcode,
 //                    this.country,
                     this.geo_apikey
