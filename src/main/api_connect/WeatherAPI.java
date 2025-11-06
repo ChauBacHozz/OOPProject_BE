@@ -1,5 +1,4 @@
 package main.api_connect;
-import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -22,23 +21,22 @@ public class WeatherAPI {
     private String HOCHIMINH_lon = "106.7012016";
 
 //    private String url = "http://maps.openweathermap.org/maps/2.0/weather/TA2/{z}/{x}/{y}?date=1552861800&opacity=0.9&fill_bound=true&appid=36b69ee0026fdc012bc3898d9389d0a2";
-    public WeatherResponse getWeatherData(String lat, String lon) {
+    public void apiTest() {
         try {
             String urlStr = String.format(
                     "https://api.openweathermap.org/data/3.0/onecall?lat=%s&lon=%s&exclude=minutely&appid=%s",
-                    lat,
-                    lon,
-                    this.geo_apikey
+                    this.HANOI_lat,
+                    this.HANOI_lon,
+                    this.geo_apikey //
             );
             URL url = new URL(urlStr);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
+
             int responseCode = conn.getResponseCode();
-            if (responseCode != 200) {
-                throw new RuntimeException("Failed to get weather data. HTTP error code: " + responseCode);
-            }
+            System.out.println(responseCode);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String inputLine;
@@ -51,24 +49,10 @@ public class WeatherAPI {
             in.close();
 
             String json = response.toString();
-            Gson gson = new Gson();
-            return gson.fromJson(json, WeatherResponse.class);
+            System.out.println(json);
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
         }
-    }
-
-    public WeatherResponse getHanoiWeather() {
-        return getWeatherData(HANOI_lat, HANOI_lon);
-    }
-
-    public WeatherResponse getDaNangWeather() {
-        return getWeatherData(DANANG_lat, DANANG_lon);
-    }
-
-    public WeatherResponse getHoChiMinhWeather() {
-        return getWeatherData(HOCHIMINH_lat, HOCHIMINH_lon);
     }
 
     public void GeocodingAPI() {
