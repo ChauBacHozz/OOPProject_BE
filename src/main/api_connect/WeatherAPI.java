@@ -3,14 +3,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
+import com.google.gson.Gson;
+//import
 public class WeatherAPI {
     private String apikey = "fad20e53bfebd7a0e3866aa41dd1900c";
     private String geo_apikey = "d985f00d5c6b2d564322408d7ad29c77";
-//    private String op = "TA2";
-//    private String z = ;
-//    private String x = ;
-//    private String y = ;
     private String zipcode = "00120";
     private String country = "VN";
     private String HANOI_lat = "21.0294498";
@@ -49,7 +46,12 @@ public class WeatherAPI {
             in.close();
 
             String json = response.toString();
-            System.out.println(json);
+            Gson gson = new Gson();
+
+            CurrentWeather c_data = gson.fromJson(json, CurrentWeather.class);
+            System.out.println(c_data.lat + c_data.lon);
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -83,7 +85,8 @@ public class WeatherAPI {
             in.close();
 
             String json = response.toString();
-            System.out.println(json);
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
