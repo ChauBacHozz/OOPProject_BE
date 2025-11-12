@@ -6,7 +6,7 @@ public class BaseWeather {
     public float feels_like;
     public int pressure;
     public int humidity;
-    public int uvi;
+    public float uvi;
     public int clouds;
     public long visibility;
     public float windspeed;

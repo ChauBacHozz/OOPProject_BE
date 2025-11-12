@@ -48,8 +48,8 @@ public class WeatherAPI {
             String json = response.toString();
             Gson gson = new Gson();
 
-            CurrentWeather c_data = gson.fromJson(json, CurrentWeather.class);
-            System.out.println(c_data.lat + c_data.lon);
+            CurrentAPI c_data = gson.fromJson(json, CurrentAPI.class);
+            System.out.println(c_data.lat + ";" + c_data.lon + ";" + c_data.current.clouds);
 
 
         } catch (Exception e) {
