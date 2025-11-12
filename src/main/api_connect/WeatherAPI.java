@@ -1,11 +1,20 @@
 package main.api_connect;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.FieldNamingPolicy;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import com.google.gson.Gson;
-//import
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 public class WeatherAPI {
+    private static final Logger logger = Logger.getLogger(WeatherAPI.class.getName());
+    
     private String apikey = "fad20e53bfebd7a0e3866aa41dd1900c";
     private String geo_apikey = "d985f00d5c6b2d564322408d7ad29c77";
     private String zipcode = "00120";
@@ -17,78 +26,159 @@ public class WeatherAPI {
     private String HOCHIMINH_lat = "10.776325";
     private String HOCHIMINH_lon = "106.7012016";
 
-//    private String url = "http://maps.openweathermap.org/maps/2.0/weather/TA2/{z}/{x}/{y}?date=1552861800&opacity=0.9&fill_bound=true&appid=36b69ee0026fdc012bc3898d9389d0a2";
-    public void apiTest() {
+    private final Gson gson;
+
+    public WeatherAPI() {
+        this.gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .setPrettyPrinting()
+                .create();
+        logger.log(Level.INFO, "WeatherAPI initialized");
+    }
+
+    public CompletableFuture<OneCallResponse> fetchWeatherAsync(String lat, String lon) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return fetchWeatherSync(lat, lon);
+            } catch (ApiException e) {
+                logger.log(Level.SEVERE, "Failed to fetch weather data for lat=" + lat + ", lon=" + lon, e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public OneCallResponse fetchWeatherSync(String lat, String lon) throws ApiException {
+        if (lat == null || lon == null || lat.isEmpty() || lon.isEmpty()) {
+            throw new ApiException("Latitude and longitude cannot be null or empty");
+        }
+
+        String urlStr = String.format(
+                "https://api.openweathermap.org/data/3.0/onecall?lat=%s&lon=%s&appid=%s",
+                lat, lon, this.apikey
+        );
+
+        return executeHttpGet(urlStr, OneCallResponse.class);
+    }
+
+    public OneCallResponse fetchHanoiWeatherSync() throws ApiException {
+        return fetchWeatherSync(HANOI_lat, HANOI_lon);
+    }
+
+    public CompletableFuture<OneCallResponse> fetchHanoiWeatherAsync() {
+        return fetchWeatherAsync(HANOI_lat, HANOI_lon);
+    }
+
+    public CompletableFuture<OneCallResponse> fetchDaNangWeatherAsync() {
+        return fetchWeatherAsync(DANANG_lat, DANANG_lon);
+    }
+
+    public CompletableFuture<OneCallResponse> fetchHoChiMinhWeatherAsync() {
+        return fetchWeatherAsync(HOCHIMINH_lat, HOCHIMINH_lon);
+    }
+
+    private <T> T executeHttpGet(String urlStr, Class<T> responseClass) throws ApiException {
+        HttpURLConnection conn = null;
+        BufferedReader in = null;
         try {
-            String urlStr = String.format(
-                    "https://api.openweathermap.org/data/3.0/onecall?lat=%s&lon=%s&exclude=minutely&appid=%s",
-                    this.HANOI_lat,
-                    this.HANOI_lon,
-                    this.geo_apikey //
-            );
             URL url = new URL(urlStr);
-
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
 
             int responseCode = conn.getResponseCode();
-            System.out.println(responseCode);
+            logger.log(Level.INFO, "HTTP Response Code: " + responseCode);
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String inputLine;
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new ApiException("HTTP Error " + responseCode + " from API", responseCode);
+            }
+
+            in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder response = new StringBuilder();
-
+            String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
             }
 
-            in.close();
-
             String json = response.toString();
-            Gson gson = new Gson();
+            logger.log(Level.FINE, "Received JSON response (length=" + json.length() + ")");
 
-            CurrentAPI c_data = gson.fromJson(json, CurrentAPI.class);
-            System.out.println(c_data.lat + ";" + c_data.lon + ";" + c_data.current.clouds);
+            T result = gson.fromJson(json, responseClass);
+            if (result == null) {
+                throw new ApiException("Failed to parse JSON response");
+            }
+            return result;
 
-
+        } catch (ApiException e) {
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Exception during HTTP GET: " + e.getMessage(), e);
+            throw new ApiException("Network or parsing error: " + e.getMessage(), -1);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Failed to close BufferedReader", e);
+                }
+            }
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
-    public void GeocodingAPI() {
+    public CompletableFuture<String> geocodeAsync(String cityName, String countryCode) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return geocodeSync(cityName, countryCode);
+            } catch (ApiException e) {
+                logger.log(Level.SEVERE, "Geocoding failed for " + cityName, e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public String geocodeSync(String cityName, String countryCode) throws ApiException {
+        if (cityName == null || cityName.isEmpty()) {
+            throw new ApiException("City name cannot be null or empty");
+        }
+
+        String query = countryCode != null && !countryCode.isEmpty()
+                ? cityName + "," + countryCode
+                : cityName;
+
+        String urlStr = String.format(
+                "https://api.openweathermap.org/geo/1.0/direct?q=%s&limit=1&appid=%s",
+                query, this.geo_apikey
+        );
+
         try {
-            String urlStr = String.format(
-                    "http://api.openweathermap.org/geo/1.0/direct?q=Haiphong,VN&limit=1&appid=%s",
-//                    this.zipcode,
-//                    this.country,
-                    this.geo_apikey
-            );
-            URL url = new URL(urlStr);
-
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
             conn.setRequestMethod("GET");
-
-
+            conn.setConnectTimeout(10000);
             int responseCode = conn.getResponseCode();
-            System.out.println(responseCode);
+            logger.log(Level.INFO, "Geocoding API HTTP Response: " + responseCode);
+
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new ApiException("Geocoding HTTP Error " + responseCode, responseCode);
+            }
 
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String inputLine;
             StringBuilder response = new StringBuilder();
-
+            String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
             }
-
             in.close();
-
-            String json = response.toString();
-
-
+            conn.disconnect();
+            return response.toString();
+        } catch (ApiException e) {
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Geocoding request failed", e);
+            throw new ApiException("Geocoding error: " + e.getMessage());
         }
     }
 }
+

@@ -1,14 +1,20 @@
 package main.api_connect;
 
+import java.util.List;
+
 public class BaseWeather {
     public long dt;
-    public float temp;
-    public float feels_like;
-    public int pressure;
-    public int humidity;
-    public float uvi;
-    public int clouds;
-    public long visibility;
-    public float windspeed;
-    public int wind_deg;
+    public Integer pressure;
+    public Integer humidity;
+    public Float dew_point;
+    public Float uvi;
+    public Float clouds;
+    public Long visibility;
+    public Float wind_speed;
+    public Integer wind_deg;
+    public Float wind_gust;
+    public List<WeatherDescriptorBase> weather;
+
+    public BaseWeather() {
+    }
 }
