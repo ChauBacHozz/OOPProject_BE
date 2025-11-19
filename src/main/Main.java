@@ -6,7 +6,6 @@ import main.api_connect.ApiException;
 import main.api_module.CurrentWeatherGSON;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,10 +18,10 @@ public class Main {
             WeatherAPI wapi = new WeatherAPI();
 
 //            Lấy thông tin thời tiết ở thời diểm hiện tại
-            Map<String, CurrentWeatherGSON> currentWeatherData = wapi.getCurrentWeatherData();
+//            Map<String, CurrentWeatherGSON> currentWeatherData = wapi.getCurrentWeatherData();
 
 //            Lấy thông tin thời  tiết forecast của từng thành phố
-
+            wapi.getForecastingData();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Unexpected error", e);
             System.exit(1);

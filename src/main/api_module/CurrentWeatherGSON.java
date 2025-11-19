@@ -1,16 +1,14 @@
 package main.api_module;
 
 
-import main.api_connect.BaseWeather;
 import main.api_module.base.*;
-
 import java.util.List;
 
 class gson_Coordinate extends BaseGsonCoordinate {
 
 }
 
-class gson_Weather extends BaseWeather {
+class gson_Weather extends BaseGsonWeather {
 
 }
 

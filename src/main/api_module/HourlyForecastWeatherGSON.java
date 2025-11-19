@@ -1,7 +1,5 @@
 package main.api_module;
 
-
-import main.api_connect.BaseWeather;
 import main.api_module.base.*;
 
 import java.util.List;
@@ -19,19 +17,17 @@ class forecast_gson_hourly_element {
     public BaseGsonClouds clouds;
     public BaseGsonWind wind;
     public long visibility;
-    public int pop;
+    public float pop;
     public forecast_gson_Sys sys;
     public String dt_txt;
 }
-public class ForecastWeatherData {
+public class HourlyForecastWeatherGSON {
     public int cod;
     public int message;
     public int cnt;
-    public forecast_gson_hourly_element list;
-
-
-
-    public ForecastWeatherData() {
+    public List<forecast_gson_hourly_element> list;
+    public GsonCity city;
+    public HourlyForecastWeatherGSON() {
 
     }
 }
