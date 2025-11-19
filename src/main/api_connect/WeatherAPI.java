@@ -3,11 +3,14 @@ package main.api_connect;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.FieldNamingPolicy;
+import main.api_module.CurrentWeatherGSON;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -15,7 +18,7 @@ import java.util.logging.Level;
 public class WeatherAPI {
     private static final Logger logger = Logger.getLogger(WeatherAPI.class.getName());
     
-    private String apikey = "fad20e53bfebd7a0e3866aa41dd1900c";
+    private String apikey = "01603b13e5f2b64b9de321bdd07ee2b4";
     private String geo_apikey = "d985f00d5c6b2d564322408d7ad29c77";
     private String zipcode = "00120";
     private String country = "VN";
@@ -36,7 +39,7 @@ public class WeatherAPI {
         logger.log(Level.INFO, "WeatherAPI initialized");
     }
 
-    public CompletableFuture<OneCallResponse> fetchWeatherAsync(String lat, String lon) {
+    public CompletableFuture<CurrentWeatherGSON> fetchWeatherAsync(String lat, String lon) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return fetchWeatherSync(lat, lon);
@@ -47,32 +50,32 @@ public class WeatherAPI {
         });
     }
 
-    public OneCallResponse fetchWeatherSync(String lat, String lon) throws ApiException {
+    public CurrentWeatherGSON fetchWeatherSync(String lat, String lon) throws ApiException {
         if (lat == null || lon == null || lat.isEmpty() || lon.isEmpty()) {
             throw new ApiException("Latitude and longitude cannot be null or empty");
         }
 
         String urlStr = String.format(
-                "https://api.openweathermap.org/data/3.0/onecall?lat=%s&lon=%s&appid=%s",
+                "https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s",
                 lat, lon, this.apikey
         );
 
-        return executeHttpGet(urlStr, OneCallResponse.class);
+        return executeHttpGet(urlStr, CurrentWeatherGSON.class);
     }
 
-    public OneCallResponse fetchHanoiWeatherSync() throws ApiException {
+    public CurrentWeatherGSON fetchHanoiWeatherSync() throws ApiException {
         return fetchWeatherSync(HANOI_lat, HANOI_lon);
     }
 
-    public CompletableFuture<OneCallResponse> fetchHanoiWeatherAsync() {
+    public CompletableFuture<CurrentWeatherGSON> fetchHanoiWeatherAsync() {
         return fetchWeatherAsync(HANOI_lat, HANOI_lon);
     }
 
-    public CompletableFuture<OneCallResponse> fetchDaNangWeatherAsync() {
+    public CompletableFuture<CurrentWeatherGSON> fetchDaNangWeatherAsync() {
         return fetchWeatherAsync(DANANG_lat, DANANG_lon);
     }
 
-    public CompletableFuture<OneCallResponse> fetchHoChiMinhWeatherAsync() {
+    public CompletableFuture<CurrentWeatherGSON> fetchHoChiMinhWeatherAsync() {
         return fetchWeatherAsync(HOCHIMINH_lat, HOCHIMINH_lon);
     }
 
@@ -126,6 +129,42 @@ public class WeatherAPI {
                 conn.disconnect();
             }
         }
+    }
+
+    public Map<String, CurrentWeatherGSON> getCurrentWeatherData() {
+        try {
+            CompletableFuture<CurrentWeatherGSON> hanoiFuture = fetchHanoiWeatherAsync();
+            CompletableFuture<CurrentWeatherGSON> daNangFuture = fetchDaNangWeatherAsync();
+            CompletableFuture<CurrentWeatherGSON> hcmFuture = fetchHoChiMinhWeatherAsync();
+
+            CompletableFuture.allOf(hanoiFuture, daNangFuture, hcmFuture).join();
+
+            CurrentWeatherGSON hanoiData = hanoiFuture.getNow(null);
+            CurrentWeatherGSON danangData = daNangFuture.getNow(null);
+            CurrentWeatherGSON hcmData = hcmFuture.getNow(null);
+
+//            if (hanoiData != null) {
+//                System.out.println("Hanoi Data: " + this.gson.toJson(hanoiData));
+//            }
+//            if (danangData != null) {
+//                System.out.println("Danang Data: " + this.gson.toJson(danangData));
+//            }
+//            if (hcmData != null) {
+//                System.out.println("HCM Data: " + this.gson.toJson(hcmData));
+//            }
+            Map<String, CurrentWeatherGSON> currentData = new HashMap<>();
+            currentData.put("Hanoi", hanoiData);
+            currentData.put("Danang", danangData);
+            currentData.put("HCM", hcmData);
+            return currentData;
+        } catch (Exception e) {
+            Map<String, CurrentWeatherGSON> error = new HashMap<>();
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void getForecastingData() {
+
     }
 
     public CompletableFuture<String> geocodeAsync(String cityName, String countryCode) {
