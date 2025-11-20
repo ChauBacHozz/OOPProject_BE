@@ -30,7 +30,7 @@ public class WeatherAPI {
     private String HOCHIMINH_lat = "10.776325";
     private String HOCHIMINH_lon = "106.7012016";
 
-    private final Gson gson;
+    public final Gson gson;
 
     public WeatherAPI() {
         this.gson = new GsonBuilder()
