@@ -39,7 +39,7 @@ public class Appflow {
         }
     }
 
-    public void insertForecastAPIdata(String forecastType) {
+    public void insertForecastHourlyAPIdata() {
         Map<String, HourlyForecastWeatherGSON> currentWeatherData = wapi.getWeatherData(HourlyForecastWeatherGSON.class);
 
         dbConnector.truncateTable("hourly");
@@ -50,6 +50,21 @@ public class Appflow {
             for (ForecastHourlyRowData rd : city_row) {
                 rd.setCity_id(city_id_map.get(entry.getKey()));
                 dbConnector.insertToForecastingHourlyDB(rd, entry.getKey());
+            }
+        }
+    }
+
+    public void insertForecastDailyAPIdata() {
+        Map<String, DailyForecastWeatherGSON> currentWeatherData = wapi.getWeatherData(DailyForecastWeatherGSON.class);
+
+        dbConnector.truncateTable("daily");
+        for (Map.Entry<String, DailyForecastWeatherGSON> entry : currentWeatherData.entrySet()) {
+            DailyForecastWeatherGSON city_curent_data = entry.getValue();
+            List<ForecastDailyRowData> city_row = city_curent_data.exportAsRow();
+
+            for (ForecastDailyRowData rd : city_row) {
+                rd.setCity_id(city_id_map.get(entry.getKey()));
+                dbConnector.insertToForecastingDailyDB(rd, entry.getKey());
             }
         }
     }
