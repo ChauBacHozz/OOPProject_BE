@@ -1,11 +1,16 @@
 package main.appflow;
 
 import main.api_connect.WeatherAPI;
+import main.api_module.CurrentWeatherGSON;
+import main.api_module.DailyForecastWeatherGSON;
 import main.api_module.HourlyForecastWeatherGSON;
+import main.db_base.CurrentRowData;
 import main.db_base.ForecastDailyRowData;
+import main.db_base.ForecastHourlyRowData;
 import main.db_connect.DatabaseConnector;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Appflow {
@@ -24,20 +29,28 @@ public class Appflow {
 
     }
 
-    public void insertAPIdata() {
+    public void insertCurrentAPIData() {
+        Map<String, CurrentWeatherGSON> currentWeatherData = wapi.getWeatherData(CurrentWeatherGSON.class);
+        for (Map.Entry<String, CurrentWeatherGSON> entry : currentWeatherData.entrySet()) {
+            CurrentWeatherGSON city_curent_data = entry.getValue();
+            CurrentRowData city_row = city_curent_data.exportAsRow();
+            city_row.setCity_id(city_id_map.get(entry.getKey()));
+            dbConnector.insertToCurrentDB(city_row);
+        }
+    }
 
+    public void insertForecastAPIdata(String forecastType) {
         Map<String, HourlyForecastWeatherGSON> currentWeatherData = wapi.getWeatherData(HourlyForecastWeatherGSON.class);
 
+        dbConnector.truncateTable("hourly");
         for (Map.Entry<String, HourlyForecastWeatherGSON> entry : currentWeatherData.entrySet()) {
             HourlyForecastWeatherGSON city_curent_data = entry.getValue();
-            ForecastDailyRowData city_row = city_curent_data.exportAsRow();
-            city_row.setCity_id(city_id_map.get(entry.getKey()));
-//            dbConnector.insertToCurrentDB(city_row);
+            List<ForecastHourlyRowData> city_row = city_curent_data.exportAsRow();
+
+            for (ForecastHourlyRowData rd : city_row) {
+                rd.setCity_id(city_id_map.get(entry.getKey()));
+                dbConnector.insertToForecastingHourlyDB(rd, entry.getKey());
+            }
         }
-
-
-
-
-
     }
 }

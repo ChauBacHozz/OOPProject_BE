@@ -22,7 +22,7 @@ public class Main {
     public static void main(String[] args) {
 
         Appflow app = new Appflow();
-        app.insertAPIdata();
+        app.insertHourlyAPIdata();
 
     }
 

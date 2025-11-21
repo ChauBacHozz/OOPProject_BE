@@ -1,7 +1,8 @@
 package main.api_module;
 
+import com.google.gson.annotations.SerializedName;
 import main.api_module.base.*;
-import main.db_base.ForecastDailyRowData;
+import main.db_base.ForecastHourlyRowData;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -15,14 +16,28 @@ class hourly_gson_Main extends BaseGsonMain {
 class hourly_gson_Sys extends BaseGsonSys {
     public String pod;
 }
+
+class Rain {
+    @SerializedName("1h")
+    private Double oneHour;
+
+    @SerializedName("3h")
+    private Double threeHour;
+
+    // getter
+    public Double getOneHour() { return oneHour != null ? oneHour : 0.0; }
+    public Double getThreeHour() { return threeHour != null ? threeHour : 0.0; }
+}
+
 class forecast_gson_hourly_element {
     public long dt;
     public hourly_gson_Main main;
     public List<BaseGsonWeather> weather;
     public BaseGsonClouds clouds;
     public BaseGsonWind wind;
-    public long visibility;
+    public int visibility;
     public float pop;
+    public Rain rain;
     public hourly_gson_Sys sys;
     public String dt_txt;
 }
@@ -32,36 +47,35 @@ public class HourlyForecastWeatherGSON {
     public int cnt;
     public List<forecast_gson_hourly_element> list;
     public GsonCity city;
+//    Constructor
     public HourlyForecastWeatherGSON() {
 
     }
 
-    public List<ForecastDailyRowData> exportAsRow() {
-        ArrayList<ForecastDailyRowData> rds_lst = new ArrayList<ForecastDailyRowData>();
-
+    public List<ForecastHourlyRowData> exportAsRow() {
+        ArrayList<ForecastHourlyRowData> rds_lst = new ArrayList<ForecastHourlyRowData>();
         for (int i = 0; i < this.list.size(); i++) {
-            ForecastDailyRowData rd = new ForecastDailyRowData(
-                    i,
-                    this.list.get(i).temp.day,
-                    this.list.get(i).pressure,
-                    this.list.get(i).humidity,
-                    this.list.get(i).speed,
-                    this.list.get(i).deg,
-                    this.list.get(i).gust,
-                    this.list.get(i).rain,
-                    this.list.get(i).clouds,
+            ForecastHourlyRowData rd = new ForecastHourlyRowData(
+                    this.list.get(i).main.temp,
+                    this.list.get(i).main.feels_like,
+                    this.list.get(i).main.pressure,
+                    this.list.get(i).main.humidity,
+                    this.list.get(i).visibility,
+                    this.list.get(i).wind.speed,
+                    this.list.get(i).wind.deg,
+                    this.list.get(i).wind.gust,
+                    (this.list.get(i).rain != null ? this.list.get(i).rain.getOneHour() : 0),
+                    this.list.get(i).clouds.all,
                     LocalDateTime.ofInstant(
                             Instant.ofEpochSecond(this.list.get(i).dt),
                             ZoneId.systemDefault()
                     ),
-                    this.list.get(i).pop,
-                    this.list.get(i).temp.min,
-                    this.list.get(i).temp.max
+                    i,
+                    this.list.get(i).pop
             );
 
             rds_lst.add(rd);
         }
         return rds_lst;
     }
-
 }
