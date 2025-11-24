@@ -68,6 +68,11 @@ public class WeatherAPI {
                     "https://pro.openweathermap.org/data/2.5/forecast/hourly?lat=%s&lon=%s&appid=%s",
                     lat, lon, this.apikey
             );
+        } else if (weatherClass.getSimpleName().equalsIgnoreCase("CurrentAQIGSON")) {
+            urlStr = String.format(
+                    "https://pro.openweathermap.org/data/2.5/air_pollution?lat=%s&lon=%s&appid=%s",
+                    lat, lon, this.apikey
+            );
         } else {
             urlStr = String.format(
                     "https://pro.openweathermap.org/data/2.5/forecast/daily?lat=%s&lon=%s&appid=%s",

@@ -65,7 +65,11 @@ public class CurrentWeatherGSON {
                 LocalDateTime.ofInstant(
                         Instant.ofEpochSecond(this.dt),
                         ZoneId.systemDefault()
-                )
+                ),
+                this.main.temp_min,
+                this.main.temp_max,
+                weather.description,
+
         );
         return rd;
     }

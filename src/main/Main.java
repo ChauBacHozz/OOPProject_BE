@@ -1,31 +1,26 @@
 package main;
 
-import com.google.gson.Gson;
-import main.api_connect.WeatherAPI;
-import main.api_connect.ApiException;
-import main.api_module.CurrentWeatherGSON;
-import main.api_module.DailyForecastWeatherGSON;
-import main.api_module.HourlyForecastWeatherGSON;
 import main.appflow.Appflow;
-import main.db_base.CurrentRowData;
-import main.db_connect.DatabaseConnector;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-
+import org.jobrunr.configuration.JobRunr;
+import org.jobrunr.storage.InMemoryStorageProvider;
+import org.jobrunr.scheduling.BackgroundJob;
+import org.jobrunr.scheduling.cron.Cron;
 
 public class Main {
-    private static final Logger logger = Logger.getLogger(Main.class.getName());
+
     public static void main(String[] args) {
 
         Appflow app = new Appflow();
-        app.insertCurrentAPIData();
-        app.insertForecastHourlyAPIdata();
-        app.insertForecastDailyAPIdata();
+        // Initialize JobRunr
+        JobRunr.configure()
+                .useStorageProvider(new InMemoryStorageProvider()) // No database needed
+                .useBackgroundJobServer() // Starts the processing thread
+                .useDashboard()           // Starts the dashboard at http://localhost:8000
+                .initialize();
 
+        BackgroundJob.scheduleRecurrently(
+                "my-first-job",     // Optional id for this job
+                Cron.every5minutes(), // A simple CRON expression
+                () -> app.execute());
     }
-
 }

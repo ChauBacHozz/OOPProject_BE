@@ -29,6 +29,12 @@ public class Appflow {
 
     }
 
+    public void execute() {
+        insertCurrentAPIData();
+        insertForecastHourlyAPIdata();
+        insertForecastDailyAPIdata();
+    }
+
     public void insertCurrentAPIData() {
         Map<String, CurrentWeatherGSON> currentWeatherData = wapi.getWeatherData(CurrentWeatherGSON.class);
         for (Map.Entry<String, CurrentWeatherGSON> entry : currentWeatherData.entrySet()) {
@@ -38,6 +44,8 @@ public class Appflow {
             dbConnector.insertToCurrentDB(city_row);
         }
     }
+
+
 
     public void insertForecastHourlyAPIdata() {
         Map<String, HourlyForecastWeatherGSON> currentWeatherData = wapi.getWeatherData(HourlyForecastWeatherGSON.class);

@@ -5,6 +5,7 @@ import main.db_base.ForecastDailyRowData;
 import main.db_base.ForecastHourlyRowData;
 
 import java.sql.*;
+import java.time.Instant;
 
 public class DatabaseConnector {
     String url = "jdbc:mysql://localhost:3306/oop";
@@ -35,8 +36,8 @@ public class DatabaseConnector {
     public void insertToCurrentDB(CurrentRowData rowData) {
         try {
             String insert_sql = "INSERT INTO currentdata " +
-                    "(city_id,temperature,feellike,pressure,humidity,windspeed,windeg,windgust,rainamount,cloud,currentdt) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+                    "(city_id,temperature,feellike,pressure,humidity,windspeed,windeg,windgust,rainamount,cloud,temp_min,temp_max,currentdt) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
             PreparedStatement preparedStatement = this.conn.prepareStatement(insert_sql);
 
@@ -51,7 +52,9 @@ public class DatabaseConnector {
             preparedStatement.setFloat(8, rowData.windgust);
             preparedStatement.setDouble(9, rowData.rainamount);
             preparedStatement.setFloat(10, rowData.cloud);
-            preparedStatement.setTimestamp(11, Timestamp.valueOf(rowData.currentdt));
+            preparedStatement.setFloat(11, rowData.temp_min);
+            preparedStatement.setFloat(12, rowData.temp_max);
+            preparedStatement.setTimestamp(13, Timestamp.from(Instant.now()));
 
             preparedStatement.execute();
 
