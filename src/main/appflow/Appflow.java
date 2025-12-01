@@ -1,9 +1,11 @@
 package main.appflow;
 
 import main.api_connect.WeatherAPI;
+import main.api_module.CurrentAQIGSON;
 import main.api_module.CurrentWeatherGSON;
 import main.api_module.DailyForecastWeatherGSON;
 import main.api_module.HourlyForecastWeatherGSON;
+import main.db_base.CurrentAQIRowData;
 import main.db_base.CurrentRowData;
 import main.db_base.ForecastDailyRowData;
 import main.db_base.ForecastHourlyRowData;
@@ -31,6 +33,7 @@ public class Appflow {
 
     public void execute() {
         insertCurrentAPIData();
+        insertCurrentAQIAPIData();
         insertForecastHourlyAPIdata();
         insertForecastDailyAPIdata();
     }
@@ -45,7 +48,15 @@ public class Appflow {
         }
     }
 
-
+    public void insertCurrentAQIAPIData() {
+        Map<String, CurrentAQIGSON> currentWeatherData = wapi.getWeatherData(CurrentAQIGSON.class);
+        for (Map.Entry<String, CurrentAQIGSON> entry : currentWeatherData.entrySet()) {
+            CurrentAQIGSON city_curent_data = entry.getValue();
+            CurrentAQIRowData city_row = city_curent_data.exportAsRow();
+            city_row.setCity_id(city_id_map.get(entry.getKey()));
+            dbConnector.insertToCurrentAQIDB(city_row);
+        }
+    }
 
     public void insertForecastHourlyAPIdata() {
         Map<String, HourlyForecastWeatherGSON> currentWeatherData = wapi.getWeatherData(HourlyForecastWeatherGSON.class);

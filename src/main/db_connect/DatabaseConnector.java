@@ -1,5 +1,6 @@
 package main.db_connect;
 
+import main.db_base.CurrentAQIRowData;
 import main.db_base.CurrentRowData;
 import main.db_base.ForecastDailyRowData;
 import main.db_base.ForecastHourlyRowData;
@@ -33,11 +34,31 @@ public class DatabaseConnector {
 //        }
     }
 
+    public void insertToCurrentAQIDB(CurrentAQIRowData rowData) {
+        try {
+            String insert_sql = "INSERT INTO currentaqidata " +
+                    "(city_id,aqi,currentdt) " +
+                    "VALUES (?,?,?)";
+
+            PreparedStatement preparedStatement = this.conn.prepareStatement(insert_sql);
+
+//            Set up for inserting
+            preparedStatement.setInt(1, rowData.city_id);
+            preparedStatement.setFloat(2, rowData.aqi);
+            preparedStatement.setTimestamp(3, Timestamp.from(Instant.now()));
+
+            preparedStatement.execute();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void insertToCurrentDB(CurrentRowData rowData) {
         try {
             String insert_sql = "INSERT INTO currentdata " +
-                    "(city_id,temperature,feellike,pressure,humidity,windspeed,windeg,windgust,rainamount,cloud,temp_min,temp_max,currentdt) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "(city_id,temperature,feellike,pressure,humidity,windspeed,windeg,windgust,rainamount,cloud,temp_min,temp_max,currentdt,sunrise,sunset,description,icon) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
             PreparedStatement preparedStatement = this.conn.prepareStatement(insert_sql);
 
@@ -55,6 +76,10 @@ public class DatabaseConnector {
             preparedStatement.setFloat(11, rowData.temp_min);
             preparedStatement.setFloat(12, rowData.temp_max);
             preparedStatement.setTimestamp(13, Timestamp.from(Instant.now()));
+            preparedStatement.setLong(14, rowData.sunrise);
+            preparedStatement.setLong(15, rowData.sunset);
+            preparedStatement.setString(16, rowData.description);
+            preparedStatement.setString(17, rowData.icon);
 
             preparedStatement.execute();
 
@@ -67,8 +92,8 @@ public class DatabaseConnector {
         try {
             String insert_sql = String.format("""
                     INSERT INTO forecastdaily%s 
-                    (days,city_id,temperature,pressure,humidity,windspeed,windeg,windgust,rainamount,cloud,currentdt,pop,tempmin,tempmax) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", city.toLowerCase());
+                    (days,city_id,temperature,pressure,humidity,windspeed,windeg,windgust,rainamount,cloud,currentdt,pop,tempmin,tempmax,icon) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", city.toLowerCase());
 
             PreparedStatement preparedStatement = this.conn.prepareStatement(insert_sql);
 
@@ -86,6 +111,7 @@ public class DatabaseConnector {
             preparedStatement.setFloat(12, rowData.pop);
             preparedStatement.setFloat(13, rowData.tempmin);
             preparedStatement.setFloat(14, rowData.tempmax);
+            preparedStatement.setString(15, rowData.icon);
 
             preparedStatement.execute();
         } catch (Exception e) {
@@ -97,8 +123,8 @@ public class DatabaseConnector {
         try {
             String insert_sql = String.format("""
                     INSERT INTO forecasthourly%s 
-                    (city_id,temperature,feellike,pressure,humidity,visibility,windspeed,windeg,windgust,rainamount,cloud,currentdt,hours,pop) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", city.toLowerCase());
+                    (city_id,temperature,feellike,pressure,humidity,visibility,windspeed,windeg,windgust,rainamount,cloud,currentdt,hours,pop,icon) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", city.toLowerCase());
 
             PreparedStatement preparedStatement = this.conn.prepareStatement(insert_sql);
 
@@ -116,6 +142,7 @@ public class DatabaseConnector {
             preparedStatement.setTimestamp(12, Timestamp.valueOf(rowData.currentdt));
             preparedStatement.setFloat(13, rowData.hours);
             preparedStatement.setFloat(14, rowData.pop);
+            preparedStatement.setString(15, rowData.icon);
 
             preparedStatement.execute();
         } catch (Exception e) {

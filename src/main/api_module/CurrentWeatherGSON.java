@@ -68,8 +68,10 @@ public class CurrentWeatherGSON {
                 ),
                 this.main.temp_min,
                 this.main.temp_max,
-                weather.description,
-
+                weather.get(0).description,
+                sys.sunrise,
+                sys.sunset,
+                weather.get(0).icon
         );
         return rd;
     }

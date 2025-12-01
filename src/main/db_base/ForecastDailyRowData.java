@@ -18,12 +18,13 @@ public class ForecastDailyRowData {
     public float pop;
     public float tempmin;
     public float tempmax;
+    public String icon;
 
     public void setCity_id(int city_id) {
         this.city_id = city_id;
     }
 
-    public ForecastDailyRowData(int days, float temperature, float pressure, float humidity, float windspeed, float windeg, float windgust, float rainamount, int cloud, LocalDateTime currentdt, float pop, float tempmin, float tempmax) {
+    public ForecastDailyRowData(int days, float temperature, float pressure, float humidity, float windspeed, float windeg, float windgust, float rainamount, int cloud, LocalDateTime currentdt, float pop, float tempmin, float tempmax, String icon) {
         this.days = days;
         this.temperature = temperature;
         this.pressure = pressure;
@@ -37,5 +38,6 @@ public class ForecastDailyRowData {
         this.pop = pop;
         this.tempmin = tempmin;
         this.tempmax = tempmax;
+        this.icon = icon;
     }
 }

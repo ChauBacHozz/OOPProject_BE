@@ -71,7 +71,8 @@ public class HourlyForecastWeatherGSON {
                             ZoneId.systemDefault()
                     ),
                     i,
-                    this.list.get(i).pop
+                    this.list.get(i).pop,
+                    this.list.get(i).weather.get(0).icon
             );
 
             rds_lst.add(rd);

@@ -80,7 +80,8 @@ public class DailyForecastWeatherGSON {
                     ),
                     this.list.get(i).pop,
                     this.list.get(i).temp.min,
-                    this.list.get(i).temp.max
+                    this.list.get(i).temp.max,
+                    this.list.get(i).weather.get(0).icon
             );
 
             rds_lst.add(rd);

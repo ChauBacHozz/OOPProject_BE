@@ -18,13 +18,13 @@ public class ForecastHourlyRowData {
     public LocalDateTime currentdt;
     public int hours;
     public float pop;
-
+    public String icon;
 
     public void setCity_id(int city_id) {
         this.city_id = city_id;
     }
 
-    public ForecastHourlyRowData(float temperature, float feellike, float pressure, float humidity, int visibility, float windspeed, float windeg, float windgust, double rainamount, int cloud, LocalDateTime currentdt, int hours, float pop) {
+    public ForecastHourlyRowData(float temperature, float feellike, float pressure, float humidity, int visibility, float windspeed, float windeg, float windgust, double rainamount, int cloud, LocalDateTime currentdt, int hours, float pop, String icon) {
         this.temperature = temperature;
         this.feellike = feellike;
         this.pressure = pressure;
@@ -38,6 +38,7 @@ public class ForecastHourlyRowData {
         this.currentdt = currentdt;
         this.hours = hours;
         this.pop = pop;
+        this.icon = icon;
     }
 
 
